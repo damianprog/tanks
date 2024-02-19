@@ -1,0 +1,21 @@
+@font-face {
+    font-family: 'PressStart2P';
+    src: url('assets/fonts/PressStart2P-Regular.ttf');
+}
+
+body {
+    font-family: 'PressStart2P';
+    background: #666;
+    color: #fff;
+    overflow: hidden;
+}
+
+canvas {
+    background: #000;
+}
+
+.main-container {
+    width: 600px;
+    display: flex;
+    margin: 21px auto 0 auto;
+}
