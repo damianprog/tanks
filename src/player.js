@@ -1,4 +1,6 @@
 import Position from './position.js'
+import { MOVING_DIRECTION } from './moving-direction.js'
+import Missile from './missile.js';
 
 export default class Player {
     constructor(game) {
@@ -7,13 +9,8 @@ export default class Player {
         this.position = new Position(300, 291);
         this.speedX = 0;
         this.speedY = 0;
-
-        this.movingDirections = {
-            up: 'up',
-            down: 'down',
-            left: 'left',
-            right: 'right'
-        };
+        this.currentMovingDirection = MOVING_DIRECTION.RIGHT;
+        this.missiles = [];
     }
 
     draw(ctx) {
@@ -21,35 +18,46 @@ export default class Player {
         ctx.rect(this.position.x, this.position.y, this.size, this.size);
         ctx.fillStyle = "#00FF00";
         ctx.fill();
+
+        this.missiles.forEach(missile => missile.draw(ctx));
     }
 
     update(deltaTime) {
+        this.missiles.forEach(missile => missile.update(deltaTime));
+
         this.position.x = this.position.x + this.speedX * deltaTime;
         this.position.y = this.position.y + this.speedY * deltaTime;
+    }
+
+    shoot() {
+        console.log(Missile.size);
+        const missilePosition = new Position(this.position.x + 15 - Missile.size / 2, this.position.y + 15 - Missile.size / 2);
+        const missile = new Missile(missilePosition, this.currentMovingDirection);
+        this.missiles.push(missile);
     }
 
     moveLeft() {
         this.speedY = 0;
         this.speedX = -0.1;
-        this.currentMovingDirection = this.movingDirections.left;
+        this.currentMovingDirection = MOVING_DIRECTION.LEFT;
     }
 
     moveRight() {
         this.speedY = 0;
         this.speedX = 0.1;
-        this.currentMovingDirection = this.movingDirections.right;
+        this.currentMovingDirection = MOVING_DIRECTION.RIGHT;
     }
 
     moveUp() {
         this.speedX = 0;
         this.speedY = -0.1;
-        this.currentMovingDirection = this.movingDirections.up;
+        this.currentMovingDirection = MOVING_DIRECTION.UP;
     }
 
     moveDown() {
         this.speedX = 0;
         this.speedY = 0.1;
-        this.currentMovingDirection = this.movingDirections.down;
+        this.currentMovingDirection = MOVING_DIRECTION.DOWN;
     }
 
     stop() {
