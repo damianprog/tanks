@@ -18,22 +18,16 @@ export default class Player {
         ctx.rect(this.position.x, this.position.y, this.size, this.size);
         ctx.fillStyle = "#00FF00";
         ctx.fill();
-
-        this.missiles.forEach(missile => missile.draw(ctx));
     }
 
     update(deltaTime) {
-        this.missiles.forEach(missile => missile.update(deltaTime));
-
         this.position.x = this.position.x + this.speedX * deltaTime;
         this.position.y = this.position.y + this.speedY * deltaTime;
     }
 
     shoot() {
-        console.log(Missile.size);
         const missilePosition = new Position(this.position.x + 15 - Missile.size / 2, this.position.y + 15 - Missile.size / 2);
-        const missile = new Missile(missilePosition, this.currentMovingDirection);
-        this.missiles.push(missile);
+        this.game.createMissile(missilePosition, this.currentMovingDirection);
     }
 
     moveLeft() {
