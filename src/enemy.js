@@ -13,6 +13,7 @@ export default class Enemy {
         this.missiles = [];
         this.lastDirectionChange = 0;
         this.lastShoot = 0;
+        this.markedForDeletion = false;
         this.moveRight();
     }
 
@@ -78,7 +79,7 @@ export default class Enemy {
 
     shoot() {
         const missilePosition = new Position(this.position.x + 15 - Missile.size / 2, this.position.y + 15 - Missile.size / 2);
-        this.game.createMissile(missilePosition, this.currentMovingDirection);
+        this.game.createMissile(missilePosition, this.currentMovingDirection, true);
     }
 
     moveLeft() {

@@ -3,11 +3,12 @@ import { MOVING_DIRECTION } from "./moving-direction.js";
 export default class Missile {
     static size = 5;
 
-    constructor(position, movingDirection, isEnemy) {
+    constructor(position, movingDirection, isEnemy = false) {
         this.position = position;
         this.movingDirection = movingDirection;
         this.isEnemy = isEnemy;
         this.markedForDeletion = false;
+        this.size = Missile.size;
         this.setSpeed();
     }
 

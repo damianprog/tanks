@@ -26,8 +26,8 @@ export default class Game {
         this.missiles = [];
     }
 
-    createMissile(missilePosition, missileDirection) {
-        const missile = new Missile(missilePosition, missileDirection);
+    createMissile(missilePosition, missileDirection, isEnemy = false) {
+        const missile = new Missile(missilePosition, missileDirection, isEnemy);
         this.missiles.push(missile);
     }
 
@@ -37,12 +37,31 @@ export default class Game {
         this.missiles.forEach(missile => missile.draw(ctx));
     }
 
+    collisionDetection(object1, object2) {
+        if (object1.position.x + object1.size >= object2.position.x
+            && object1.position.x <= object2.position.x + object2.size
+            && object1.position.y + object1.size >= object2.position.y
+            && object1.position.y <= object2.position.y + object2.size) {
+            return true;
+        }
+    }
     update(deltaTime) {
         this.player.update(deltaTime);
         this.enemies.forEach(enemy => enemy.update(deltaTime));
         this.missiles = this.missiles.filter(missile => !missile.markedForDeletion);
+        this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
         this.missiles.forEach(missile => missile.update(deltaTime));
 
+        const playerMissiles = this.missiles.filter(missile => !missile.isEnemy);
+
+        playerMissiles.forEach(missile => {
+            this.enemies.forEach(enemy => {
+                if (this.collisionDetection(missile, enemy)) {
+                    enemy.markedForDeletion = true;
+                    missile.markedForDeletion = true;
+                }
+            })
+        });
     }
 
     clear(ctx) {
