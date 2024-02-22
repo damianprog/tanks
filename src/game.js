@@ -3,6 +3,8 @@ import Input from "./input.js";
 import Player from "./player.js";
 import Position from "./position.js";
 import Missile from "./missile.js";
+import BrickBlock from "./brickBlock.js";
+import { Board } from "./board.js";
 
 export default class Game {
     constructor(gameWidth, gameHeight) {
@@ -10,7 +12,25 @@ export default class Game {
         this.gameHeight = gameHeight;
         this.player = new Player(this);
         this.input = new Input(this);
+        this.initializeBoard();
         this.initializeDefaults();
+    }
+
+    initializeBoard() {
+        const allBrickBlocks = [];
+        let currentIndex = 0;
+        for (let row = 0; row < 30; row++) {
+
+            for (let col = 0; col < 30; col++) {
+                if (Board[currentIndex] === 1) {
+                    allBrickBlocks.push(new BrickBlock(this, new Position(col * 20, row * 20)));
+                }
+                currentIndex++;
+            }
+
+        }
+
+        this.allBrickBlocks = allBrickBlocks;
     }
 
     initializeDefaults() {
@@ -35,6 +55,7 @@ export default class Game {
         this.player.draw(ctx);
         this.enemies.forEach(enemy => enemy.draw(ctx));
         this.missiles.forEach(missile => missile.draw(ctx));
+        this.allBrickBlocks.forEach(brickBlock => brickBlock.draw(ctx));
     }
 
     collisionDetection(object1, object2) {
@@ -52,15 +73,20 @@ export default class Game {
         this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
         this.missiles.forEach(missile => missile.update(deltaTime));
 
-        const playerMissiles = this.missiles.filter(missile => !missile.isEnemy);
 
-        playerMissiles.forEach(missile => {
-            this.enemies.forEach(enemy => {
-                if (this.collisionDetection(missile, enemy)) {
-                    enemy.markedForDeletion = true;
-                    missile.markedForDeletion = true;
+        this.missiles.forEach(missile => {
+            if (missile.isEnemy) {
+                if (this.collisionDetection(missile, this.player)) {
+                    console.log('Player dead!');
                 }
-            })
+            } else {
+                this.enemies.forEach(enemy => {
+                    if (this.collisionDetection(missile, enemy)) {
+                        enemy.markedForDeletion = true;
+                        missile.markedForDeletion = true;
+                    }
+                })
+            }
         });
     }
 
