@@ -4,6 +4,7 @@ import Player from "./player.js";
 import Position from "./position.js";
 import Missile from "./missile.js";
 import BrickBlock from "./brickBlock.js";
+import EagleBlock from "./eagleBlock.js";
 import { Board } from "./board.js";
 
 export default class Game {
@@ -18,12 +19,16 @@ export default class Game {
 
     initializeBoard() {
         const allBrickBlocks = [];
+        const allEagleBlocks = [];
+
         let currentIndex = 0;
         for (let row = 0; row < 30; row++) {
 
             for (let col = 0; col < 30; col++) {
                 if (Board[currentIndex] === 1) {
                     allBrickBlocks.push(new BrickBlock(this, new Position(col * 20, row * 20)));
+                } else if (Board[currentIndex] === 2) {
+                    allEagleBlocks.push(new EagleBlock(this, new Position(col * 20, row * 20)));
                 }
                 currentIndex++;
             }
@@ -31,6 +36,7 @@ export default class Game {
         }
 
         this.allBrickBlocks = allBrickBlocks;
+        this.allEagleBlocks = allEagleBlocks;
     }
 
     initializeDefaults() {
@@ -56,6 +62,7 @@ export default class Game {
         this.enemies.forEach(enemy => enemy.draw(ctx));
         this.missiles.forEach(missile => missile.draw(ctx));
         this.allBrickBlocks.forEach(brickBlock => brickBlock.draw(ctx));
+        this.allEagleBlocks.forEach(eagleBlock => eagleBlock.draw(ctx));
     }
 
     collisionDetection(object1, object2) {
