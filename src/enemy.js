@@ -47,6 +47,18 @@ export default class Enemy {
         }
     }
 
+    collisionDetection(object, deltaTime) {
+        let objectSpeedX = object.speedX ? object.speedX * deltaTime : 0;
+        let objectSpeedY = object.speedY ? object.speedY * deltaTime : 0;
+
+        if (this.position.x + this.speedX * deltaTime + this.size >= object.position.x + objectSpeedX
+            && this.position.x + this.speedX * deltaTime <= object.position.x + objectSpeedX + object.size
+            && this.position.y + this.speedY * deltaTime + this.size >= object.position.y + objectSpeedY
+            && this.position.y + this.speedY * deltaTime <= object.position.y + objectSpeedY + object.size) {
+            return true;
+        }
+    }
+
     update(deltaTime) {
 
         let collisionDetected = false;
@@ -69,6 +81,13 @@ export default class Enemy {
             collisionDetected = true;
             this.setNewDirectionChangeSpeed();
         }
+
+        this.game.allBlocks.forEach(block => {
+            if (this.collisionDetection(block, deltaTime)) {
+                collisionDetected = true;
+                this.setNewDirectionChangeSpeed();
+            }
+        });
 
         if (!collisionDetected) {
             this.position.x = this.position.x + this.speedX * deltaTime;

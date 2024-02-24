@@ -37,13 +37,14 @@ export default class Game {
 
         this.allBrickBlocks = allBrickBlocks;
         this.allEagleBlocks = allEagleBlocks;
+        this.allBlocks = [...allBrickBlocks, ...allEagleBlocks];
     }
 
     initializeDefaults() {
         this.enemies = [];
-        const enemy1 = new Enemy(this, new Position(110, 290));
-        const enemy2 = new Enemy(this, new Position(300, 50));
-        const enemy3 = new Enemy(this, new Position(493, 290));
+        const enemy1 = new Enemy(this, new Position(89, 5));
+        const enemy2 = new Enemy(this, new Position(170, 5));
+        const enemy3 = new Enemy(this, new Position(408, 5));
 
         this.enemies.push(enemy1);
         this.enemies.push(enemy2);
