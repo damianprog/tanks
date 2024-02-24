@@ -5,6 +5,7 @@ import Position from "./position.js";
 import Missile from "./missile.js";
 import BrickBlock from "./brick-block.js";
 import EagleBlock from "./eagle-block.js";
+import collisionDetection from "./collision-detection.js";
 import { Board } from "./board.js";
 
 export default class Game {
@@ -13,6 +14,7 @@ export default class Game {
         this.gameHeight = gameHeight;
         this.player = new Player(this);
         this.input = new Input(this);
+        this.isEagleShot = false;
         this.initializeBoard();
         this.initializeDefaults();
     }
@@ -62,39 +64,62 @@ export default class Game {
         this.player.draw(ctx);
         this.enemies.forEach(enemy => enemy.draw(ctx));
         this.missiles.forEach(missile => missile.draw(ctx));
-        this.allBrickBlocks.forEach(brickBlock => brickBlock.draw(ctx));
-        this.allEagleBlocks.forEach(eagleBlock => eagleBlock.draw(ctx));
+        this.allBlocks.filter(block => block.draw(ctx));
     }
 
-    collisionDetection(object1, object2) {
-        if (object1.position.x + object1.size >= object2.position.x
-            && object1.position.x <= object2.position.x + object2.size
-            && object1.position.y + object1.size >= object2.position.y
-            && object1.position.y <= object2.position.y + object2.size) {
-            return true;
+    resolveGameOver() {
+        if (this.player.lives == 0) {
+            console.log('Game Over.');
         }
     }
+
     update(deltaTime) {
         this.player.update(deltaTime);
         this.enemies.forEach(enemy => enemy.update(deltaTime));
         this.missiles = this.missiles.filter(missile => !missile.markedForDeletion);
         this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
+        this.allBlocks = this.allBlocks.filter(block => !block.markedForDeletion);
         this.missiles.forEach(missile => missile.update(deltaTime));
 
 
+        // for (let i = 0; i < this.missiles.length; i++) {
+
+        // }
+
         this.missiles.forEach(missile => {
             if (missile.isEnemy) {
-                if (this.collisionDetection(missile, this.player)) {
-                    console.log('Player dead!');
+                if (collisionDetection(missile, this.player, deltaTime)) {
+                    missile.markedForDeletion = true;
+                    this.player.lives--;
+                    this.resolveGameOver();
                 }
             } else {
                 this.enemies.forEach(enemy => {
-                    if (this.collisionDetection(missile, enemy)) {
+                    if (collisionDetection(missile, enemy, deltaTime)) {
                         enemy.markedForDeletion = true;
                         missile.markedForDeletion = true;
                     }
                 })
             }
+
+            this.missiles.forEach(otherMissile => {
+                if (otherMissile != missile && collisionDetection(missile, otherMissile, deltaTime)) {
+                    missile.markedForDeletion = true;
+                    otherMissile.markedForDeletion = true;
+                }
+            });
+
+            // checking if missile is not marked for deletion for not breaking two blocks at once
+            this.allBlocks.forEach(block => {
+                if (collisionDetection(missile, block, deltaTime) && !missile.markedForDeletion) {
+                    block.markedForDeletion = true;
+                    missile.markedForDeletion = true;
+                    if (block instanceof EagleBlock) {
+                        this.player.lives = 0;
+                        this.resolveGameOver();
+                    }
+                }
+            });
         });
     }
 

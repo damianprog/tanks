@@ -89,25 +89,25 @@ export default class Enemy {
 
     moveLeft() {
         this.speedY = 0;
-        this.speedX = -0.05;
+        this.speedX = -0.1;
         this.currentMovingDirection = MOVING_DIRECTION.LEFT;
     }
 
     moveRight() {
         this.speedY = 0;
-        this.speedX = 0.05;
+        this.speedX = 0.1;
         this.currentMovingDirection = MOVING_DIRECTION.RIGHT;
     }
 
     moveUp() {
         this.speedX = 0;
-        this.speedY = -0.05;
+        this.speedY = -0.1;
         this.currentMovingDirection = MOVING_DIRECTION.UP;
     }
 
     moveDown() {
         this.speedX = 0;
-        this.speedY = 0.05;
+        this.speedY = 0.1;
         this.currentMovingDirection = MOVING_DIRECTION.DOWN;
     }
 

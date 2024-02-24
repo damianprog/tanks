@@ -4,6 +4,7 @@ export default class Block {
         this.position = position;
         this.size = 20;
         this.color = color;
+        this.markedForDeletion = false;
     }
 
     update(deltaTime) {

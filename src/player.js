@@ -13,6 +13,7 @@ export default class Player {
         this.speedY = 0;
         this.currentMovingDirection = MOVING_DIRECTION.RIGHT;
         this.missiles = [];
+        this.lives = 3;
     }
 
     draw(ctx) {
