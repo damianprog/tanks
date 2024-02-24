@@ -3,8 +3,8 @@ import Input from "./input.js";
 import Player from "./player.js";
 import Position from "./position.js";
 import Missile from "./missile.js";
-import BrickBlock from "./brickBlock.js";
-import EagleBlock from "./eagleBlock.js";
+import BrickBlock from "./brick-block.js";
+import EagleBlock from "./eagle-block.js";
 import { Board } from "./board.js";
 
 export default class Game {
