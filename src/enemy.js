@@ -2,6 +2,7 @@ import Position from './position.js'
 import { MOVING_DIRECTION } from './moving-direction.js'
 import Missile from './missile.js';
 import collisionDetection from './collision-detection.js';
+import boardBoundariesCollisionDetection from './board-boundaries-collision-detection.js';
 
 export default class Enemy {
     constructor(game, position) {
@@ -62,11 +63,7 @@ export default class Enemy {
             this.shoot();
         }
 
-        if (this.position.x + this.size + this.speedX * deltaTime > 600
-            || this.position.y + this.size + this.speedY * deltaTime > 600
-            || this.position.x + this.speedX * deltaTime < 0
-            || this.position.y + this.speedY * deltaTime < 0
-        ) {
+        if (boardBoundariesCollisionDetection(this, deltaTime)) {
             collisionDetected = true;
             this.setNewDirectionChangeSpeed();
         }

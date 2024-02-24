@@ -2,6 +2,7 @@ import Position from './position.js'
 import { MOVING_DIRECTION } from './moving-direction.js'
 import Missile from './missile.js';
 import collisionDetection from './collision-detection.js';
+import boardBoundariesCollisionDetection from './board-boundaries-collision-detection.js';
 
 export default class Player {
     constructor(game) {
@@ -21,20 +22,25 @@ export default class Player {
         ctx.fill();
     }
 
-    checkCollisionWithBlocks(deltaTime) {
+    update(deltaTime) {
+        let collisionDetected = false;
+
+        if (boardBoundariesCollisionDetection(this, deltaTime)) {
+            collisionDetected = true;
+            this.stop();
+        }
+
         this.game.allBlocks.forEach(block => {
             if (collisionDetection(this, block, deltaTime)) {
-                this.speedX = 0;
-                this.speedY = 0;
+                collisionDetected = true;
+                this.stop();
             }
         });
-    }
 
-    update(deltaTime) {
-        this.checkCollisionWithBlocks(deltaTime);
-
-        this.position.x = this.position.x + this.speedX * deltaTime;
-        this.position.y = this.position.y + this.speedY * deltaTime;
+        if (!collisionDetected) {
+            this.position.x = this.position.x + this.speedX * deltaTime;
+            this.position.y = this.position.y + this.speedY * deltaTime;
+        }
     }
 
     shoot() {
