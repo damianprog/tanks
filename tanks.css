@@ -19,3 +19,12 @@ canvas {
     display: flex;
     margin: 21px auto 0 auto;
 }
+
+.labels {
+    margin: 0 0 0 10px;
+    white-space: nowrap;
+}
+
+.labels p:first-child {
+    margin-top: 0;
+}

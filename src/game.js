@@ -15,7 +15,8 @@ export default class Game {
         this.player = new Player(this);
         this.input = new Input(this);
         this.isEagleShot = false;
-        this.initializeBoard();
+        this.currentLevel = 1;
+        this.currentScore = 0;
         this.initializeDefaults();
     }
 
@@ -42,7 +43,7 @@ export default class Game {
         this.allBlocks = [...allBrickBlocks, ...allEagleBlocks];
     }
 
-    initializeDefaults() {
+    initializeEnemies() {
         this.enemies = [];
         const enemy1 = new Enemy(this, new Position(89, 5));
         const enemy2 = new Enemy(this, new Position(170, 5));
@@ -51,6 +52,19 @@ export default class Game {
         this.enemies.push(enemy1);
         this.enemies.push(enemy2);
         this.enemies.push(enemy3);
+    }
+
+    initializeDefaults() {
+        this.initializeBoard();
+        this.initializeEnemies();
+        this.levelQty = document.querySelector('.level-qty');
+        this.livesQty = document.querySelector('.lives-qty');
+        this.scoreQty = document.querySelector('.score-qty');
+        this.bestScoreQty = document.querySelector('.best-score-qty');
+
+        this.levelQty.innerHTML = this.currentLevel;
+        this.livesQty.innerHTML = this.player.lives;
+        this.scoreQty.innerHTML = this.currentScore;
 
         this.missiles = [];
     }
@@ -91,6 +105,7 @@ export default class Game {
                 if (collisionDetection(missile, this.player, deltaTime)) {
                     missile.markedForDeletion = true;
                     this.player.lives--;
+                    this.livesQty.innerHTML = this.player.lives;
                     this.resolveGameOver();
                 }
             } else {
@@ -98,6 +113,8 @@ export default class Game {
                     if (collisionDetection(missile, enemy, deltaTime)) {
                         enemy.markedForDeletion = true;
                         missile.markedForDeletion = true;
+                        this.currentScore += 100;
+                        this.scoreQty.innerHTML = this.currentScore;
                     }
                 })
             }
