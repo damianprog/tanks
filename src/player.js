@@ -18,8 +18,8 @@ export default class Player {
     }
 
     loadTankImage() {
-        this.img = new Image();
-        this.img.src = "/assets/images/green-tank.png";
+        this.tankImg = new Image();
+        this.tankImg.src = "/assets/images/green-tank.png";
     }
 
     getCurrentMovingDirectionAngle() {
@@ -41,8 +41,8 @@ export default class Player {
         ctx.rotate((this.getCurrentMovingDirectionAngle() * Math.PI) / 180);
         ctx.translate((this.position.x + this.size / 2) * -1, (this.position.y + this.size / 2) * -1);
 
-        if (this.img) {
-            ctx.drawImage(this.img, this.position.x, this.position.y, this.size, this.size);
+        if (this.tankImg) {
+            ctx.drawImage(this.tankImg, this.position.x, this.position.y, this.size, this.size);
         }
         ctx.restore();
     }

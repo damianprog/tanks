@@ -18,6 +18,12 @@ export default class Game {
         this.currentLevel = 1;
         this.currentScore = 0;
         this.initializeDefaults();
+        this.loadEagleImg();
+    }
+
+    loadEagleImg() {
+        this.eagleImg = new Image();
+        this.eagleImg.src = "/assets/images/eagle.png";
     }
 
     initializeBoard() {
@@ -79,6 +85,10 @@ export default class Game {
         this.enemies.forEach(enemy => enemy.draw(ctx));
         this.missiles.forEach(missile => missile.draw(ctx));
         this.allBlocks.filter(block => block.draw(ctx));
+
+        if (this.eagleImg) {
+            ctx.drawImage(this.eagleImg, 279, 559, 42, 42);
+        }
     }
 
     resolveGameOver() {
@@ -94,11 +104,6 @@ export default class Game {
         this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
         this.allBlocks = this.allBlocks.filter(block => !block.markedForDeletion);
         this.missiles.forEach(missile => missile.update(deltaTime));
-
-
-        // for (let i = 0; i < this.missiles.length; i++) {
-
-        // }
 
         this.missiles.forEach(missile => {
             if (missile.isEnemy) {
