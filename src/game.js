@@ -17,6 +17,7 @@ export default class Game {
         this.isEagleShot = false;
         this.currentLevel = 1;
         this.currentScore = 0;
+        this.currentLevelEnemiesLeft = 22;
         this.initializeDefaults();
         this.loadEagleImg();
     }
@@ -50,27 +51,56 @@ export default class Game {
     }
 
     initializeEnemies() {
-        this.enemies = [];
         const enemy1 = new Enemy(this, new Position(89, 5));
         const enemy2 = new Enemy(this, new Position(170, 5));
         const enemy3 = new Enemy(this, new Position(408, 5));
 
-        this.enemies.push(enemy1);
-        this.enemies.push(enemy2);
-        this.enemies.push(enemy3);
+        this.enemies = [enemy1, enemy2, enemy3];
+    }
+
+    getRandomEnemyPosition() {
+        let enemyPosition;
+
+        const roll = Math.random();
+
+        if (roll < 0.33) {
+            enemyPosition = new Position(89, 5);
+        } else if (roll >= 0.33 && roll < 0.66) {
+            enemyPosition = new Position(170, 5);
+        } else {
+            return enemyPosition = new Position(408, 5);
+        }
+
+        return enemyPosition;
+    }
+
+    spawnEnemy() {
+        const newEnemy = new Enemy(this, this.getRandomEnemyPosition());
+        this.enemies.push(newEnemy);
+    }
+
+    initializeSpawnEnemyInterval() {
+        this.enemySpawnInterval = setInterval(() => {
+            if (this.enemies.length < 4) {
+                this.spawnEnemy();
+            }
+        }, 5000);
     }
 
     initializeDefaults() {
         this.initializeBoard();
         this.initializeEnemies();
+        this.initializeSpawnEnemyInterval();
         this.levelQty = document.querySelector('.level-qty');
         this.livesQty = document.querySelector('.lives-qty');
         this.scoreQty = document.querySelector('.score-qty');
         this.bestScoreQty = document.querySelector('.best-score-qty');
+        this.enemiesLeftQty = document.querySelector('.enemies-left-qty');
 
         this.levelQty.innerHTML = this.currentLevel;
         this.livesQty.innerHTML = this.player.lives;
         this.scoreQty.innerHTML = this.currentScore;
+        this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
 
         this.missiles = [];
     }
@@ -97,52 +127,79 @@ export default class Game {
         }
     }
 
-    update(deltaTime) {
-        this.player.update(deltaTime);
-        this.enemies.forEach(enemy => enemy.update(deltaTime));
+    isEnemySpawnTimePassed() {
+        return new Date() - this.lastShoot >= 5000;
+    }
+
+    removeMarkedObjects() {
         this.missiles = this.missiles.filter(missile => !missile.markedForDeletion);
         this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
         this.allBlocks = this.allBlocks.filter(block => !block.markedForDeletion);
-        this.missiles.forEach(missile => missile.update(deltaTime));
+    }
 
-        this.missiles.forEach(missile => {
-            if (missile.isEnemy) {
-                if (collisionDetection(missile, this.player, deltaTime)) {
-                    missile.markedForDeletion = true;
-                    this.player.lives--;
-                    this.livesQty.innerHTML = this.player.lives;
+    updateObjects(deltaTime) {
+        this.player.update(deltaTime);
+        this.enemies.forEach(enemy => enemy.update(deltaTime));
+        this.missiles.forEach(missile => missile.update(deltaTime));
+    }
+
+    detectMissileWithMissileCollision(missile, deltaTime) {
+        this.missiles.forEach(otherMissile => {
+            if (otherMissile != missile && collisionDetection(missile, otherMissile, deltaTime)) {
+                missile.markedForDeletion = true;
+                otherMissile.markedForDeletion = true;
+            }
+        });
+    }
+
+    detectMissileWithBlocksCollision(missile, deltaTime) {
+        // checking if missile is not marked for deletion for not breaking two blocks at once
+        this.allBlocks.forEach(block => {
+            if (collisionDetection(missile, block, deltaTime) && !missile.markedForDeletion) {
+                block.markedForDeletion = true;
+                missile.markedForDeletion = true;
+                if (block instanceof EagleBlock) {
+                    this.player.lives = 0;
                     this.resolveGameOver();
                 }
-            } else {
-                this.enemies.forEach(enemy => {
-                    if (collisionDetection(missile, enemy, deltaTime)) {
-                        enemy.markedForDeletion = true;
-                        missile.markedForDeletion = true;
-                        this.currentScore += 100;
-                        this.scoreQty.innerHTML = this.currentScore;
-                    }
-                })
             }
-
-            this.missiles.forEach(otherMissile => {
-                if (otherMissile != missile && collisionDetection(missile, otherMissile, deltaTime)) {
-                    missile.markedForDeletion = true;
-                    otherMissile.markedForDeletion = true;
-                }
-            });
-
-            // checking if missile is not marked for deletion for not breaking two blocks at once
-            this.allBlocks.forEach(block => {
-                if (collisionDetection(missile, block, deltaTime) && !missile.markedForDeletion) {
-                    block.markedForDeletion = true;
-                    missile.markedForDeletion = true;
-                    if (block instanceof EagleBlock) {
-                        this.player.lives = 0;
-                        this.resolveGameOver();
-                    }
-                }
-            });
         });
+    }
+
+    detectMissilePlayerEnemyCollision(missile, deltaTime) {
+        if (missile.isEnemy) {
+            if (collisionDetection(missile, this.player, deltaTime)) {
+                missile.markedForDeletion = true;
+                this.player.lives--;
+                this.livesQty.innerHTML = this.player.lives;
+                this.resolveGameOver();
+            }
+        } else {
+            this.enemies.forEach(enemy => {
+                if (collisionDetection(missile, enemy, deltaTime)) {
+                    enemy.markedForDeletion = true;
+                    missile.markedForDeletion = true;
+                    this.currentScore += 100;
+                    this.currentLevelEnemiesLeft--;
+                    this.scoreQty.innerHTML = this.currentScore;
+                    this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
+                }
+            })
+        }
+    }
+
+    detectMissileCollisions(deltaTime) {
+        this.missiles.forEach(missile => {
+            this.detectMissileWithMissileCollision(missile, deltaTime);
+            this.detectMissileWithBlocksCollision(missile, deltaTime);
+            this.detectMissilePlayerEnemyCollision(missile, deltaTime);
+        });
+    }
+
+    update(deltaTime) {
+        this.updateObjects(deltaTime);
+        this.removeMarkedObjects();
+        this.detectMissileCollisions(deltaTime);
     }
 
     clear(ctx) {

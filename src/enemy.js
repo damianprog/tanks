@@ -39,8 +39,6 @@ export default class Enemy {
     }
 
     draw(ctx) {
-
-
         ctx.save();
         ctx.translate(this.position.x + this.size / 2, this.position.y + this.size / 2);
         ctx.rotate((this.getCurrentMovingDirectionAngle() * Math.PI) / 180);

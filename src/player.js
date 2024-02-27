@@ -68,9 +68,16 @@ export default class Player {
         }
     }
 
+    isLastShootTimePassed() {
+        return this.lastShoot ? new Date() - this.lastShoot >= 500 : true;
+    }
+
     shoot() {
-        const missilePosition = new Position(this.position.x + 15 - Missile.size / 2, this.position.y + 15 - Missile.size / 2);
-        this.game.createMissile(missilePosition, this.currentMovingDirection);
+        if (this.isLastShootTimePassed()) {
+            const missilePosition = new Position(this.position.x + 15 - Missile.size / 2, this.position.y + 15 - Missile.size / 2);
+            this.game.createMissile(missilePosition, this.currentMovingDirection);
+            this.lastShoot = new Date();
+        }
     }
 
     moveLeft() {
