@@ -20,11 +20,17 @@ export default class Game {
         this.currentLevelEnemiesLeft = 22;
         this.initializeDefaults();
         this.loadEagleImg();
+        this.loadAudio();
     }
 
     loadEagleImg() {
         this.eagleImg = new Image();
         this.eagleImg.src = "/assets/images/eagle.png";
+    }
+
+    loadAudio() {
+        this.playerExplodeAudio = new Audio('/assets/sounds/player-explode.wav');
+        this.enemyExplodeAudio = new Audio('/assets/sounds/enemy-explode.wav');
     }
 
     initializeBoard() {
@@ -169,6 +175,7 @@ export default class Game {
     detectMissilePlayerEnemyCollision(missile, deltaTime) {
         if (missile.isEnemy) {
             if (collisionDetection(missile, this.player, deltaTime)) {
+                this.playerExplodeAudio.play();
                 missile.markedForDeletion = true;
                 this.player.lives--;
                 this.livesQty.innerHTML = this.player.lives;
@@ -177,6 +184,7 @@ export default class Game {
         } else {
             this.enemies.forEach(enemy => {
                 if (collisionDetection(missile, enemy, deltaTime)) {
+                    this.enemyExplodeAudio.play();
                     enemy.markedForDeletion = true;
                     missile.markedForDeletion = true;
                     this.currentScore += 100;
