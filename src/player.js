@@ -8,13 +8,17 @@ export default class Player {
     constructor(game) {
         this.game = game;
         this.size = 30;
-        this.position = new Position(285, 465);
         this.speedX = 0;
         this.speedY = 0;
         this.currentMovingDirection = MOVING_DIRECTION.UP;
         this.missiles = [];
         this.lives = 3;
+        this.setStartingPosition();
         this.loadTankImage();
+    }
+
+    setStartingPosition() {
+        this.position = new Position(285, 465);
     }
 
     loadTankImage() {

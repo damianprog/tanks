@@ -16,6 +16,7 @@ export default class Enemy {
         this.lastDirectionChange = 0;
         this.lastShoot = 0;
         this.markedForDeletion = false;
+        this.defaultSpeed = 0.1;
         this.moveRight();
         this.loadBlueTankImage();
     }
@@ -112,26 +113,26 @@ export default class Enemy {
     }
 
     moveLeft() {
+        this.speedX = -1 * this.defaultSpeed;
         this.speedY = 0;
-        this.speedX = -0.1;
         this.currentMovingDirection = MOVING_DIRECTION.LEFT;
     }
 
     moveRight() {
+        this.speedX = this.defaultSpeed;
         this.speedY = 0;
-        this.speedX = 0.1;
         this.currentMovingDirection = MOVING_DIRECTION.RIGHT;
     }
 
     moveUp() {
         this.speedX = 0;
-        this.speedY = -0.1;
+        this.speedY = -1 * this.defaultSpeed;
         this.currentMovingDirection = MOVING_DIRECTION.UP;
     }
 
     moveDown() {
         this.speedX = 0;
-        this.speedY = 0.1;
+        this.speedY = this.defaultSpeed;
         this.currentMovingDirection = MOVING_DIRECTION.DOWN;
     }
 

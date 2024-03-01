@@ -2,26 +2,34 @@ export default class Input {
     constructor(game) {
         this.game = game;
         this.player = this.game.player;
-        document.addEventListener("keydown", event => {
+        document.addEventListener('keydown', event => {
             switch (event.key) {
-                case "ArrowLeft":
+                case 'ArrowLeft':
                     this.player.moveLeft();
                     break;
 
-                case "ArrowRight":
+                case 'ArrowRight':
                     this.player.moveRight();
                     break;
 
-                case "ArrowDown":
+                case 'ArrowDown':
                     this.player.moveDown();
                     break;
 
-                case "ArrowUp":
+                case 'ArrowUp':
                     this.player.moveUp();
                     break;
 
-                case " ":
+                case ' ':
                     this.player.shoot();
+                    break;
+
+                case 'Enter':
+                    this.game.start();
+                    break;
+
+                case 'Escape':
+                    this.game.pause();
                     break;
             }
         });

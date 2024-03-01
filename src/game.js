@@ -7,25 +7,28 @@ import BrickBlock from "./brick-block.js";
 import EagleBlock from "./eagle-block.js";
 import collisionDetection from "./collision-detection.js";
 import { Board } from "./board.js";
+import { GAME_STATE } from "./game-states.js";
 
 export default class Game {
     constructor(gameWidth, gameHeight) {
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
+        this.gameState = GAME_STATE.WELCOME_MENU;
         this.player = new Player(this);
         this.input = new Input(this);
         this.isEagleShot = false;
         this.currentLevel = 1;
         this.currentScore = 0;
-        this.currentLevelEnemiesLeft = 22;
+        this.currentLevelEnemiesLeft = 21 + this.currentLevel;
         this.initializeDefaults();
+        this.initializeInfoPanels();
         this.loadEagleImg();
         this.loadAudio();
     }
 
     loadEagleImg() {
         this.eagleImg = new Image();
-        this.eagleImg.src = "/assets/images/eagle.png";
+        this.eagleImg.src = '/assets/images/eagle.png';
     }
 
     loadAudio() {
@@ -64,6 +67,25 @@ export default class Game {
         this.enemies = [enemy1, enemy2, enemy3];
     }
 
+    start() {
+        if (
+            this.gameState === GAME_STATE.WELCOME_MENU ||
+            this.gameState === GAME_STATE.GAME_OVER ||
+            this.gameState === GAME_STATE.LEVEL
+        ) {
+            this.initializeDefaults();
+            this.gameState = GAME_STATE.RUNNING;
+        }
+    }
+
+    pause() {
+        if (this.gameState === GAME_STATE.RUNNING) {
+            this.gameState = GAME_STATE.PAUSED;
+        } else if (this.gameState === GAME_STATE.PAUSED) {
+            this.gameState = GAME_STATE.RUNNING;
+        }
+    }
+
     getRandomEnemyPosition() {
         let enemyPosition;
 
@@ -87,21 +109,44 @@ export default class Game {
 
     initializeSpawnEnemyInterval() {
         this.enemySpawnInterval = setInterval(() => {
-            if (this.enemies.length < 4) {
+            const canSpawnEnemy = this.enemies.length < 4 &&
+                this.currentLevelEnemiesLeft > this.enemies.length &&
+                this.gameState != GAME_STATE.PAUSED
+
+            if (canSpawnEnemy) {
                 this.spawnEnemy();
             }
         }, 5000);
+    }
+
+    setBestScore() {
+        let bestScore = this.localStorageBestScore ? parseInt(this.localStorageBestScore) : 0;
+
+        if (this.currentScore > bestScore) {
+            bestScore = this.currentScore;
+        }
+        this.bestScoreQty.innerHTML = bestScore;
+        window.localStorage.setItem('tanksBestScore', bestScore);
     }
 
     initializeDefaults() {
         this.initializeBoard();
         this.initializeEnemies();
         this.initializeSpawnEnemyInterval();
+        this.player.setStartingPosition();
+        this.currentLevelEnemiesLeft = 21 + this.currentLevel;
         this.levelQty = document.querySelector('.level-qty');
         this.livesQty = document.querySelector('.lives-qty');
         this.scoreQty = document.querySelector('.score-qty');
         this.bestScoreQty = document.querySelector('.best-score-qty');
         this.enemiesLeftQty = document.querySelector('.enemies-left-qty');
+        this.gameOverScoreQty = document.querySelector('.game-over-score-qty');
+        this.newBestScore = document.querySelector('.new-best-score');
+        this.newBestScoreQty = document.querySelector('.new-best-score-qty');
+        this.infoPanelLevelQty = document.querySelector('.info-panel-level-qty');
+        this.localStorageBestScore = window.localStorage.getItem(
+            'tanksBestScore'
+        );
 
         this.levelQty.innerHTML = this.currentLevel;
         this.livesQty.innerHTML = this.player.lives;
@@ -109,6 +154,14 @@ export default class Game {
         this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
 
         this.missiles = [];
+        this.setBestScore();
+    }
+
+    initializeInfoPanels() {
+        this.gameOverInfoPanel = document.querySelector('.game-over-info-panel');
+        this.welcomeMenuInfoPanel = document.querySelector('.welcome-menu-info-panel');
+        this.levelInfoPanel = document.querySelector('.level-info-panel');
+        this.pausedInfoPanel = document.querySelector('.paused-info-panel');
     }
 
     createMissile(missilePosition, missileDirection, isEnemy = false) {
@@ -129,7 +182,11 @@ export default class Game {
 
     resolveGameOver() {
         if (this.player.lives == 0) {
-            console.log('Game Over.');
+            this.resolveNewBestScore();
+            this.currentLevel = 1;
+            this.currentScore = 0;
+
+            this.gameState = GAME_STATE.GAME_OVER;
         }
     }
 
@@ -141,6 +198,29 @@ export default class Game {
         this.missiles = this.missiles.filter(missile => !missile.markedForDeletion);
         this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
         this.allBlocks = this.allBlocks.filter(block => !block.markedForDeletion);
+    }
+
+    resolveNewBestScore() {
+        if (this.currentScore > parseInt(this.localStorageBestScore)) {
+            this.newBestScore.style.display = 'block';
+            this.newBestScoreQty.innerHTML = this.currentScore;
+        } else {
+            this.newBestScore.style.display = 'none';
+        }
+    }
+
+    showInfo() {
+        this.welcomeMenuInfoPanel.style.display = this.gameState === GAME_STATE.WELCOME_MENU ? 'block' : 'none';
+        this.gameOverInfoPanel.style.display = this.gameState === GAME_STATE.GAME_OVER ? 'block' : 'none';
+        this.levelInfoPanel.style.display = this.gameState === GAME_STATE.LEVEL ? 'block' : 'none';
+        this.pausedInfoPanel.style.display = this.gameState === GAME_STATE.PAUSED ? 'block' : 'none';
+
+        if (this.gameState === GAME_STATE.LEVEL) {
+            this.infoPanelLevelQty.innerHTML = this.currentLevel;
+        }
+        if (this.gameState === GAME_STATE.GAME_OVER) {
+            this.gameOverScoreQty.innerHTML = this.scoreQty.innerHTML;
+        }
     }
 
     updateObjects(deltaTime) {
@@ -172,25 +252,36 @@ export default class Game {
         });
     }
 
+    resolveLevelUp() {
+        if (this.currentLevelEnemiesLeft == 0) {
+            this.currentLevel++;
+            this.gameState = GAME_STATE.LEVEL;
+            setTimeout(() => this.start(), 4000);
+        }
+    }
+
     detectMissilePlayerEnemyCollision(missile, deltaTime) {
         if (missile.isEnemy) {
             if (collisionDetection(missile, this.player, deltaTime)) {
-                this.playerExplodeAudio.play();
+                // this.playerExplodeAudio.play();
                 missile.markedForDeletion = true;
                 this.player.lives--;
                 this.livesQty.innerHTML = this.player.lives;
+                this.player.setStartingPosition();
                 this.resolveGameOver();
             }
         } else {
             this.enemies.forEach(enemy => {
                 if (collisionDetection(missile, enemy, deltaTime)) {
-                    this.enemyExplodeAudio.play();
+                    // this.enemyExplodeAudio.play();
                     enemy.markedForDeletion = true;
                     missile.markedForDeletion = true;
                     this.currentScore += 100;
+                    this.setBestScore();
                     this.currentLevelEnemiesLeft--;
                     this.scoreQty.innerHTML = this.currentScore;
                     this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
+                    this.resolveLevelUp();
                 }
             })
         }
@@ -205,6 +296,9 @@ export default class Game {
     }
 
     update(deltaTime) {
+        this.showInfo();
+
+        if (this.gameState !== GAME_STATE.RUNNING) return;
         this.updateObjects(deltaTime);
         this.removeMarkedObjects();
         this.detectMissileCollisions(deltaTime);
