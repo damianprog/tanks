@@ -193,6 +193,7 @@ export default class Game {
             this.resolveNewBestScore();
             this.currentLevel = 1;
             this.currentScore = 0;
+            this.player.lives = 3;
 
             this.gameState = GAME_STATE.GAME_OVER;
         }
