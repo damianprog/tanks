@@ -129,12 +129,7 @@ export default class Game {
         window.localStorage.setItem('tanksBestScore', bestScore);
     }
 
-    initializeDefaults() {
-        this.initializeBoard();
-        this.initializeEnemies();
-        this.initializeSpawnEnemyInterval();
-        this.player.setStartingPosition();
-        this.currentLevelEnemiesLeft = 21 + this.currentLevel;
+    setLabels() {
         this.levelQty = document.querySelector('.level-qty');
         this.livesQty = document.querySelector('.lives-qty');
         this.scoreQty = document.querySelector('.score-qty');
@@ -144,16 +139,27 @@ export default class Game {
         this.newBestScore = document.querySelector('.new-best-score');
         this.newBestScoreQty = document.querySelector('.new-best-score-qty');
         this.infoPanelLevelQty = document.querySelector('.info-panel-level-qty');
-        this.localStorageBestScore = window.localStorage.getItem(
-            'tanksBestScore'
-        );
+    }
 
+    setLabelsDefaultQunatities() {
+        this.currentLevelEnemiesLeft = 21 + this.currentLevel;
         this.levelQty.innerHTML = this.currentLevel;
         this.livesQty.innerHTML = this.player.lives;
         this.scoreQty.innerHTML = this.currentScore;
         this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
+    }
 
-        this.missiles = [];
+    initializeDefaults() {
+        this.initializeBoard();
+        this.initializeEnemies();
+        this.initializeSpawnEnemyInterval();
+        this.player.setStartingPosition();
+        this.setLabels();
+        this.setLabelsDefaultQunatities();
+
+        this.localStorageBestScore = window.localStorage.getItem(
+            'tanksBestScore'
+        );
         this.setBestScore();
     }
 
@@ -166,7 +172,7 @@ export default class Game {
 
     createMissile(missilePosition, missileDirection, isEnemy = false) {
         const missile = new Missile(missilePosition, missileDirection, isEnemy);
-        this.missiles.push(missile);
+        this.missiles = this.missiles ? [...this.missiles, missile] : [missile];
     }
 
     draw(ctx) {
@@ -260,28 +266,36 @@ export default class Game {
         }
     }
 
+    resolveEnemyHit(missile, enemy) {
+        this.enemyExplodeAudio.play();
+        enemy.markedForDeletion = true;
+        missile.markedForDeletion = true;
+        this.currentScore += 100;
+        this.setBestScore();
+        this.currentLevelEnemiesLeft--;
+        this.scoreQty.innerHTML = this.currentScore;
+        this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
+        this.resolveLevelUp();
+    }
+
+    resolvePlayerHit(missile) {
+        this.playerExplodeAudio.play();
+        missile.markedForDeletion = true;
+        this.player.lives--;
+        this.livesQty.innerHTML = this.player.lives;
+        this.player.setStartingPosition();
+        this.resolveGameOver();
+    }
+
     detectMissilePlayerEnemyCollision(missile, deltaTime) {
         if (missile.isEnemy) {
             if (collisionDetection(missile, this.player, deltaTime)) {
-                // this.playerExplodeAudio.play();
-                missile.markedForDeletion = true;
-                this.player.lives--;
-                this.livesQty.innerHTML = this.player.lives;
-                this.player.setStartingPosition();
-                this.resolveGameOver();
+                this.resolvePlayerHit(missile);
             }
         } else {
             this.enemies.forEach(enemy => {
                 if (collisionDetection(missile, enemy, deltaTime)) {
-                    // this.enemyExplodeAudio.play();
-                    enemy.markedForDeletion = true;
-                    missile.markedForDeletion = true;
-                    this.currentScore += 100;
-                    this.setBestScore();
-                    this.currentLevelEnemiesLeft--;
-                    this.scoreQty.innerHTML = this.currentScore;
-                    this.enemiesLeftQty.innerHTML = this.currentLevelEnemiesLeft;
-                    this.resolveLevelUp();
+                    this.resolveEnemyHit(missile, enemy)
                 }
             })
         }
