@@ -160,6 +160,8 @@ export default class Game {
         this.localStorageBestScore = window.localStorage.getItem(
             'tanksBestScore'
         );
+
+        this.missiles = [];
         this.setBestScore();
     }
 
@@ -172,7 +174,7 @@ export default class Game {
 
     createMissile(missilePosition, missileDirection, isEnemy = false) {
         const missile = new Missile(missilePosition, missileDirection, isEnemy);
-        this.missiles = this.missiles ? [...this.missiles, missile] : [missile];
+        this.missiles = [...this.missiles, missile];
     }
 
     draw(ctx) {

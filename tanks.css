@@ -48,3 +48,7 @@ canvas {
 .new-best-score {
     display: none;
 }
+
+.welcome-menu-info-panel img {
+    width: 200px;
+}
